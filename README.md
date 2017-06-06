@@ -24,3 +24,4 @@ usage: JUnitPublisher
  -u,--user <arg>          The username or email address to authenticate to
                           TestRail with.
 ```# testrail-cli
+# testrail-cli
