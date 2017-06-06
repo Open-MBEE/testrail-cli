@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="gov.nasa.jpl.mbee.mdk.MMSConfiguratorTest" tests="1" skipped="0" failures="0" errors="0"
+           timestamp="2017-05-16T00:07:49" hostname="LMC-055004" time="2.333">
+    <properties/>
+    <testcase name="configure" classname="gov.nasa.jpl.mbee.mdk.MMSConfiguratorTest" time="2.333"/>
+    <system-out><![CDATA[Retina scale factor - 2
+Resolution scale factor - 1.0
+Cache directory /var/folders/81/j0tmgg79113403vms937g9rx0643_j/T
+]]></system-out>
+    <system-err><![CDATA[log4j:WARN No appenders could be found for logger (GUI).
+log4j:WARN Please initialize the log4j system properly.
+]]></system-err>
+</testsuite>
