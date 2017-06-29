@@ -31,8 +31,8 @@ repositories {
 dependencies {
     compile "org.projectlombok:lombok:1.16.16"
 
-    compile group: 'org.openmbee', name: 'junit-xml-parser', version: '1.0.0'
-    compile group: 'org.openmbee', name: 'testrail-client-wrapper', version: '1.0.0'
+    compile group: 'org.openmbee.junit', name: 'junit-xml-parser', version: '1.0.0'
+    compile group: 'org.openmbee.testrail', name: 'testrail-client-wrapper', version: '1.0.0'
     compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
 }
 
