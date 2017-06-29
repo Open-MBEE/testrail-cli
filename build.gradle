@@ -1,4 +1,4 @@
-group 'org.openmbee'
+group 'org.openmbee.testrail'
 version '1.0.0'
 
 apply plugin: 'java'
@@ -7,11 +7,11 @@ apply plugin: 'idea'
 sourceCompatibility = 1.8
 
 String buildTag = project.getProperties().get('buildTag')
-if (buildTag == null || buildTag.isEmpty()) {
-    version += '-SNAPSHOT'
-}
-else if (buildTag != version) {
+if (buildTag != null && !buildTag.isEmpty() && buildTag != version) {
     throw new GradleException('Version mismatch.')
+}
+if (buildTag == null || buildTag.isEmpty() || project.getProperties().getOrDefault('artifactoryRepository', '').toLowerCase().contains('snapshot')) {
+    version += '-SNAPSHOT'
 }
 String buildNumber = project.getProperties().getOrDefault('buildNumber', System.currentTimeSeconds());
 
@@ -31,8 +31,8 @@ repositories {
 dependencies {
     compile "org.projectlombok:lombok:1.16.16"
 
-    compile group: 'org.openmbee', name: 'junit-xml-parser', version: '1.0.0'
-    compile group: 'org.openmbee', name: 'testrail-client-wrapper', version: '1.0.0'
+    compile group: 'org.openmbee.junit', name: 'junit-xml-parser', version: '1.0.0'
+    compile group: 'org.openmbee.testrail', name: 'testrail-client-wrapper', version: '1.0.0'
     compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
 }
 
