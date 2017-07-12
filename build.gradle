@@ -21,6 +21,7 @@ buildscript {
     }
     dependencies {
         classpath group: 'org.jfrog.buildinfo', name: 'build-info-extractor-gradle', version: '4.4.0'
+        classpath group: 'com.jfrog.bintray.gradle', name: 'gradle-bintray-plugin', version: '1.7.3'
     }
 }
 
@@ -48,6 +49,7 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.artifactory'
+apply plugin: 'com.jfrog.bintray'
 
 publishing {
     publications {
@@ -81,3 +83,14 @@ artifactory {
     }
 }
 artifactoryPublish.dependsOn(assemble, sourcesJar, javadocJar)
+
+bintray {
+    user = project.getProperties().get('bintrayUser')
+    key = project.getProperties().get('bintrayKey')
+    publications = ['mavenJava']
+    pkg {
+        repo = project.getProperties().get('bintrayRepo')
+        name = rootProject.name
+        userOrg = project.getProperties().get('bintrayUserOrg')
+    }
+}
