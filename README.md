@@ -54,61 +54,62 @@ Add dependency to the `pom.xml`
 
 A final profile in a `pom.xml` might look something like
 ```xml
-        <profile>
-            <id>testrail</id>
-            <properties>
-                <skipTests>false</skipTests>
-            </properties>
-            <repositories>
-                <repository>
-                    <id>jcenter</id>
-                    <name>bintray</name>
-                    <url>https://jcenter.bintray.com/</url>
-                </repository>
-            </repositories>
-            <dependencies>
-                <!-- https://jcenter.bintray.com/org/openmbee/testrail/ -->
-                <dependency>
-                    <groupId>org.openmbee.testrail</groupId>
-                    <artifactId>testrail-cli</artifactId>
-                    <version>1.0.0</version>
-                </dependency>
-            </dependencies>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>1.6.0</version>
-                        <executions>
-                            <execution>
-                                <id>post-results-testrail</id>
-                                <phase>post-integration-test</phase>
-                                <goals>
-                                    <goal>java</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <mainClass>org.openmbee.testrail.cli.JUnitPublisher</mainClass>
-                            <arguments>
-                                <!-- Equivalent to => -d dir -h host -u user -p pass -sid suite-id -pid plan-id -->
-                                <argument>--directory</argument>  <argument>path/to/junit/output</argument>
+<profile>
+    <id>testrail</id>
+    <properties>
+        <skipTests>false</skipTests>
+    </properties>
+    <repositories>
+        <repository>
+            <id>jcenter</id>
+            <name>bintray</name>
+            <url>https://jcenter.bintray.com/</url>
+        </repository>
+    </repositories>
+    <dependencies>
+        <!-- https://jcenter.bintray.com/org/openmbee/testrail/ -->
+        <dependency>
+            <groupId>org.openmbee.testrail</groupId>
+            <artifactId>testrail-cli</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <executions>
+                    <execution>
+                        <id>post-results-testrail</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <mainClass>org.openmbee.testrail.cli.JUnitPublisher</mainClass>
+                    <arguments>
+                        <!-- Equivalent to => -d dir -h host -u user -p pass -sid suite-id -pid plan-id -->
+                        <argument>--directory</argument>  <argument>path/to/junit/output</argument>
 
-                                <argument>--host</argument>   <argument>${env.TESTRAIL_HOST}</argument>
+                        <argument>--host</argument>   <argument>${env.TESTRAIL_HOST}</argument>
 
-                                <argument>--user</argument><argument>${env.TESTRAIL_USER}</argument>
+                        <argument>--user</argument><argument>${env.TESTRAIL_USER}</argument>
 
-                                <argument>--password</argument><argument>${env.TESTRAIL_PASS}</argument>
+                        <argument>--password</argument><argument>${env.TESTRAIL_PASS}</argument>
 
-                                <argument>--suite-id</argument><argument>${env.TESTRAIL_SUITE_ID}</argument>
+                        <argument>--suite-id</argument><argument>${env.TESTRAIL_SUITE_ID}</argument>
 
-                                <argument>--plan-id</argument><argument>${env.TESTRAIL_PLAN_ID}</argument>
+                        <argument>--plan-id</argument><argument>${env.TESTRAIL_PLAN_ID}</argument>
 
-                                <!--<argument>${env.TESTRAIL_RUN_NAME}</argument>-->
-                            </arguments>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
+                        <!--<argument>${env.TESTRAIL_RUN_NAME}</argument>-->
+                    </arguments>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</profile>
+```
