@@ -53,6 +53,7 @@ Add dependency to the `pom.xml`
 ```
 
 A final profile in a `pom.xml` might look something like
+### Make sure to set the environment variables! ie: env.TESTRAIL_HOST, env.TESTRAIL_USER, etc
 ```xml
 <profile>
     <id>testrail</id>
