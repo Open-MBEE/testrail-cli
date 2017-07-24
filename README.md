@@ -11,6 +11,8 @@ usage: JUnitPublisher
  -h,--host <url>          The TestRail server address, e.g.
                           yoursubdomain.testrail.net
     --help
+ -m,--milestone <name>    (Optional) The name of the TestRail milestone to
+                          associate with the run.
  -p,--password <arg>      The password or API key to authenticate to
                           TestRail with.
  -pid,--plan-id <id>      (Optional) The ID of the TestRail plan in which
