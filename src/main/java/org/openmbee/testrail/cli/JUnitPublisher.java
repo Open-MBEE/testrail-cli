@@ -43,6 +43,7 @@ public class JUnitPublisher implements Runnable {
     private static Option fileOption = Option.builder("f").longOpt("file").hasArg().argName("path").desc("Path to a JUnit XML report.").build();
     private static Option suiteOption = Option.builder("sid").longOpt("suite-id").required().hasArg().argName("id").desc("The ID of the TestRail suite in which to the test cases exist or are to be created.").type(Number.class).build();
     private static Option planOption = Option.builder("pid").longOpt("plan-id").hasArg().argName("id").desc("(Optional) The ID of the TestRail plan in which to create the run.").type(Number.class).build();
+    private static Option milestoneOption = Option.builder("m").longOpt("milestone").hasArg().argName("name").desc("(Optional) The name of the TestRail milestone to associate with the run.").build();
     private static Option runNameOption = Option.builder().longOpt("run-name").hasArg().argName("string").desc("(Optional) The name of the TestRail run. Defaults to current time in ISO-8601 format.").build();
     private static Option skipCloseRunOption = Option.builder().longOpt("skip-close-run").desc("(Optional) Providing this flag will keep the TestRail run open after adding test results.").type(Boolean.class).build();
 
@@ -57,6 +58,7 @@ public class JUnitPublisher implements Runnable {
         options.addOption(fileOption);
         options.addOption(suiteOption);
         options.addOption(planOption);
+        options.addOption(milestoneOption);
         options.addOption(runNameOption);
         options.addOption(skipCloseRunOption);
     }
@@ -64,7 +66,7 @@ public class JUnitPublisher implements Runnable {
     private final TestRailAPI api;
     private final int suiteId, planId;
     private final List<Path> reports;
-    private final String runName;
+    private final String milestoneName, runName;
     private final boolean skipCloseRun;
 
     public static void main(String... args) throws ParseException, URISyntaxException, IOException {
@@ -112,9 +114,10 @@ public class JUnitPublisher implements Runnable {
         int suiteId = ((Number) line.getParsedOptionValue(suiteOption.getOpt())).intValue();
         Object o;
         int planId = ((o = line.getParsedOptionValue(planOption.getOpt())) != null ? (Number) o : -1).intValue();
+        String milestone = line.getOptionValue(milestoneOption.getLongOpt());
         String runName = line.getOptionValue(runNameOption.getLongOpt());
         boolean skipCloseRun = line.hasOption(skipCloseRunOption.getLongOpt());
-        new JUnitPublisher(api, suiteId, planId, reports, runName, skipCloseRun).run();
+        new JUnitPublisher(api, suiteId, planId, reports, milestone, runName, skipCloseRun).run();
     }
 
     @SneakyThrows({URISyntaxException.class, IOException.class})
@@ -144,7 +147,7 @@ public class JUnitPublisher implements Runnable {
 
         Map<String, TestRailSection> testRailSectionMap = new LinkedHashMap<>(jUnitTestCaseMap.size());
         for (String name : jUnitTestCaseMap.keySet()) {
-            TestRailSection section = testRailSections.stream().filter(s -> s.getName().equals(name) || s.getDescription() != null && s.getDescription().contains("@" + name)).findFirst().orElse(null);
+            TestRailSection section = testRailSections.stream().filter(s -> s.getName().equals(name) || s.getName().contains("@" + name) || s.getDescription() != null && s.getDescription().contains("@" + name)).findFirst().orElse(null);
             if (section == null) {
                 TestRailSection requestSection = new TestRailSection().setSuiteId(suite.getId());
                 String[] nameSections = name.split("\\.");
@@ -173,11 +176,23 @@ public class JUnitPublisher implements Runnable {
 
         TestRailUser user = api.getUsers().stream().filter(u -> u.getName().equalsIgnoreCase(api.getUsername()) || u.getEmail().equalsIgnoreCase(api.getUsername())).findAny().orElseThrow(() -> new NullPointerException("No user found matching \"" + api.getUsername() + "\"."));
 
-        TestRailPlan plan = planId > 0 ? api.getPlan(planId) : null;
         TestRailRun requestRun = new TestRailRun().setProjectId(suite.getProjectId()).setSuiteId(suite.getId());
+
+        TestRailPlan plan = planId > 0 ? api.getPlan(planId) : null;
         if (plan != null) {
             requestRun.setPlanId(plan.getId());
         }
+        if (milestoneName != null) {
+            TestRailMilestone milestone = api.getMilestones(suite.getProjectId()).stream().filter(m -> m.getName().equals(milestoneName) || m.getName().contains("@" + milestoneName) || m.getDescription() != null && m.getDescription().contains("@" + milestoneName)).findFirst().orElse(null);
+            if (milestone == null) {
+                TestRailMilestone requestMilestone = new TestRailMilestone();
+                requestMilestone.setName(milestoneName);
+                requestMilestone.setProjectId(suite.getProjectId());
+                milestone = api.addMilestone(requestMilestone);
+            }
+            requestRun.setMilestoneId(milestone.getId());
+        }
+
         requestRun.setName(runName != null ? runName : LocalDateTime.now().toString()).setDescription(jUnitTestSuites.entrySet().stream().map(entry -> {
             JUnitTestSuite jUnitTestSuite = entry.getValue();
             StringBuilder descriptionBuilder = new StringBuilder();

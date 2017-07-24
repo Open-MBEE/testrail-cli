@@ -1,5 +1,5 @@
 group 'org.openmbee.testrail'
-version '1.0.0'
+version '1.0.1'
 
 apply plugin: 'java'
 apply plugin: 'idea'
@@ -33,7 +33,7 @@ dependencies {
     compile "org.projectlombok:lombok:1.16.16"
 
     compile group: 'org.openmbee.junit', name: 'junit-xml-parser', version: '1.0.0'
-    compile group: 'org.openmbee.testrail', name: 'testrail-client-wrapper', version: '1.0.0'
+    compile group: 'org.openmbee.testrail', name: 'testrail-client-wrapper', version: '1.0.1'
     compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
 }
 
@@ -88,6 +88,7 @@ bintray {
     user = project.getProperties().get('bintrayUser')
     key = project.getProperties().get('bintrayKey')
     publications = ['mavenJava']
+    publish = true
     pkg {
         repo = project.getProperties().get('bintrayRepo')
         name = rootProject.name
