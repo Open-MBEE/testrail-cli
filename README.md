@@ -1,3 +1,5 @@
+# testrail-cli
+
 ## Description:
 Uses the TestRail REST API v2 (Source: http://docs.gurock.com/testrail-api2/start) and org.openmbee:testrail-client-wrapper library to execute specific behavior from command line.
 
@@ -25,5 +27,92 @@ usage: JUnitPublisher
                           TestRail run open after adding test results.
  -u,--user <arg>          The username or email address to authenticate to
                           TestRail with.
-```# testrail-cli
-# testrail-cli
+```
+
+## Maven Setup:
+At JCenter repository to the `pom.xml`
+```xml
+<repositories>
+    ...
+    <repository
+        <id>jcenter</id>
+        <name>bintray</name>
+        <url>https://jcenter.bintray.com/</url>
+    </repository>
+    ...
+</repositories>
+```
+
+Add dependency to the `pom.xml`
+
+```xml
+<!-- https://jcenter.bintray.com/org/openmbee/testrail/ -->
+<dependency>
+    <groupId>org.openmbee.testrail</groupId>
+    <artifactId>testrail-cli</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+A final profile in a `pom.xml` might look something like
+```xml
+<profile>
+    <id>testrail</id>
+    <properties>
+        <skipTests>false</skipTests>
+    </properties>
+    <repositories>
+        <repository>
+            <id>jcenter</id>
+            <name>bintray</name>
+            <url>https://jcenter.bintray.com/</url>
+        </repository>
+    </repositories>
+    <dependencies>
+        <!-- https://jcenter.bintray.com/org/openmbee/testrail/ -->
+        <dependency>
+            <groupId>org.openmbee.testrail</groupId>
+            <artifactId>testrail-cli</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <executions>
+                    <execution>
+                        <id>post-results-testrail</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <mainClass>org.openmbee.testrail.cli.JUnitPublisher</mainClass>
+                    <arguments>
+                        <!-- Equivalent to => -d dir -h host -u user -p pass -sid suite-id -pid plan-id -->
+                        <argument>--directory</argument><argument>path/to/junit/output</argument>
+
+                        <argument>--host</argument><argument>${env.TESTRAIL_HOST}</argument>
+
+                        <argument>--user</argument><argument>${env.TESTRAIL_USER}</argument>
+
+                        <argument>--password</argument><argument>${env.TESTRAIL_PASS}</argument>
+
+                        <argument>--suite-id</argument><argument>${env.TESTRAIL_SUITE_ID}</argument>
+
+                        <argument>--plan-id</argument><argument>${env.TESTRAIL_PLAN_ID}</argument>
+
+                        <!--<argument>${env.TESTRAIL_RUN_NAME}</argument>-->
+                    </arguments>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</profile>
+```
+##### Make sure to set the environment variables! ie: env.TESTRAIL_HOST, env.TESTRAIL_USER, etc
