@@ -198,13 +198,14 @@ public class JUnitPublisher implements Runnable {
             StringBuilder descriptionBuilder = new StringBuilder();
             descriptionBuilder.append("# ").append(entry.getKey()).append(" #").append(System.lineSeparator());
             int propertyCount = jUnitTestSuite.getProperties() != null ? jUnitTestSuite.getProperties().size() : 0;
-            descriptionBuilder.append("__Properties:__ ").append(NumberFormat.getInstance().format(propertyCount)).append(System.lineSeparator());
-            descriptionBuilder.append(formatCodeString(jUnitTestSuite.getProperties().stream().map(property -> property.getName() + "=" + property.getValue()).collect(Collectors.joining(System.lineSeparator())))).append(System.lineSeparator());
-            descriptionBuilder.append("__System Out:__ ").append(System.lineSeparator());
-            descriptionBuilder.append(formatCodeString(jUnitTestSuite.getSystemOut())).append(System.lineSeparator());
-            descriptionBuilder.append("__System Err:__ ").append(System.lineSeparator());
-            descriptionBuilder.append(formatCodeString(jUnitTestSuite.getSystemErr())).append(System.lineSeparator());
-
+            if(propertyCount > 0) {
+                descriptionBuilder.append("__Properties:__ ").append(NumberFormat.getInstance().format(propertyCount)).append(System.lineSeparator());
+                descriptionBuilder.append(formatCodeString(jUnitTestSuite.getProperties().stream().map(property -> property.getName() + "=" + property.getValue()).collect(Collectors.joining(System.lineSeparator())))).append(System.lineSeparator());
+                descriptionBuilder.append("__System Out:__ ").append(System.lineSeparator());
+                descriptionBuilder.append(formatCodeString(jUnitTestSuite.getSystemOut())).append(System.lineSeparator());
+                descriptionBuilder.append("__System Err:__ ").append(System.lineSeparator());
+                descriptionBuilder.append(formatCodeString(jUnitTestSuite.getSystemErr())).append(System.lineSeparator());
+            }
             return descriptionBuilder.toString();
         }).collect(Collectors.joining(System.lineSeparator())))
                 .setAssignedToId(user.getId()).setIncludeAll(false).setCaseIds(caseMap.values().stream().map(TestRailCase::getId).collect(Collectors.toList()));
