@@ -76,7 +76,6 @@ artifactory {
         defaults {
             publications('mavenJava')
         }
-        clientConfig.setIncludeEnvVars(true)
         if (buildNumber != null && !buildNumber.isEmpty()) {
             clientConfig.info.setBuildNumber(buildNumber)
         }
