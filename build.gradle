@@ -3,6 +3,7 @@ version '1.0.2'
 
 apply plugin: 'java'
 apply plugin: 'idea'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 sourceCompatibility = 1.8
 
@@ -22,6 +23,7 @@ buildscript {
     dependencies {
         classpath group: 'org.jfrog.buildinfo', name: 'build-info-extractor-gradle', version: '4.4.0'
         classpath group: 'com.jfrog.bintray.gradle', name: 'gradle-bintray-plugin', version: '1.7.3'
+        classpath group: 'com.github.jengelman.gradle.plugins', name: 'shadow', version: '4.0.3'
     }
 }
 
@@ -61,6 +63,9 @@ publishing {
             artifact javadocJar {
                 classifier 'javadoc'
             }
+        }
+        shadow(MavenPublication) { publication ->
+            project.shadow.component(publication)
         }
     }
 }
