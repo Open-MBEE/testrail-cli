@@ -1,9 +1,9 @@
 # testrail-cli
 
-## Description:
-Uses the TestRail REST API v2 (Source: http://docs.gurock.com/testrail-api2/start) and org.openmbee:testrail-client-wrapper library to execute specific behavior from command line.
+## Description
+Uses the TestRail REST API v2 (Source: http://docs.gurock.com/testrail-api2/start) and the `org.openmbee:testrail-client-wrapper` library to execute specific behavior from command line.
 
-## Functions:
+## Functions
 * JUnitPublisher parses JUnit XML test results and publishes them to a TestRail run. Test cases will be created if they are not found in the specified suite.
 ```
 usage: JUnitPublisher
@@ -29,8 +29,13 @@ usage: JUnitPublisher
                           TestRail with.
 ```
 
-## Maven Setup:
-At JCenter repository to the `pom.xml`
+## Command Line Setup
+
+1. Download `testrail-cli-*-all.jar` from [Bintray](https://bintray.com/openmbee/maven/testrail-cli).
+2. Run `java -jar testrail-cli-*-all.jar --help` to see all available options.
+
+## Maven Setup
+Add JCenter repository to the `pom.xml`
 ```xml
 <repositories>
     ...
@@ -115,4 +120,4 @@ A final profile in a `pom.xml` might look something like
     </build>
 </profile>
 ```
-##### Make sure to set the environment variables! ie: env.TESTRAIL_HOST, env.TESTRAIL_USER, etc
+Set the environment variables, i.e. `env.TESTRAIL_HOST`, `env.TESTRAIL_USER`, etc.
