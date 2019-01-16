@@ -21,8 +21,8 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath group: 'org.jfrog.buildinfo', name: 'build-info-extractor-gradle', version: '4.4.0'
-        classpath group: 'com.jfrog.bintray.gradle', name: 'gradle-bintray-plugin', version: '1.7.3'
+        classpath group: 'org.jfrog.buildinfo', name: 'build-info-extractor-gradle', version: '4.9.0'
+        classpath group: 'com.jfrog.bintray.gradle', name: 'gradle-bintray-plugin', version: '1.8.4'
         classpath group: 'com.github.jengelman.gradle.plugins', name: 'shadow', version: '4.0.3'
     }
 }
@@ -37,6 +37,12 @@ dependencies {
     compile group: 'org.openmbee.junit', name: 'junit-xml-parser', version: '1.0.0'
     compile group: 'org.openmbee.testrail', name: 'testrail-client-wrapper', version: '1.0.1'
     compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'org.openmbee.testrail.cli.JUnitPublisher'
+    }
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
@@ -80,6 +86,7 @@ artifactory {
         }
         defaults {
             publications('mavenJava')
+            publications('shadow')
         }
         if (buildNumber != null && !buildNumber.isEmpty()) {
             clientConfig.info.setBuildNumber(buildNumber)
