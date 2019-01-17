@@ -98,7 +98,7 @@ artifactoryPublish.dependsOn(assemble, sourcesJar, javadocJar)
 bintray {
     user = project.getProperties().get('bintrayUser')
     key = project.getProperties().get('bintrayKey')
-    publications = ['mavenJava']
+    publications = ['mavenJava', 'shadow']
     publish = true
     pkg {
         repo = project.getProperties().get('bintrayRepo')
