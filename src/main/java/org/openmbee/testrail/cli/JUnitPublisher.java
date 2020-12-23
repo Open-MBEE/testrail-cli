@@ -174,7 +174,7 @@ public class JUnitPublisher implements Runnable {
             }
         }
 
-        TestRailUser user = api.getUsers().stream().filter(u -> u.getName().equalsIgnoreCase(api.getUsername()) || u.getEmail().equalsIgnoreCase(api.getUsername())).findAny().orElseThrow(() -> new NullPointerException("No user found matching \"" + api.getUsername() + "\"."));
+        TestRailUser user = api.getCurrentUser();
 
         TestRailRun requestRun = new TestRailRun().setProjectId(suite.getProjectId()).setSuiteId(suite.getId());
 
