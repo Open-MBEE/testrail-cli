@@ -1,5 +1,5 @@
 group 'org.openmbee.testrail'
-version '1.1.0'
+version '1.1.1'
 
 apply plugin: 'java'
 apply plugin: 'idea'
@@ -37,10 +37,10 @@ repositories {
 }
 
 dependencies {
-    compile "org.projectlombok:lombok:1.16.16"
+    compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.16.16'
 
     compile group: 'org.openmbee.junit', name: 'junit-xml-parser', version: '1.0.0'
-    compile group: 'org.openmbee.testrail', name: 'testrail-client-wrapper', version: '1.1.0'
+    compile group: 'org.openmbee.testrail', name: 'testrail-client-wrapper', version: '1.1.1'
     compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
 }
 
@@ -68,15 +68,9 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
-            artifact sourcesJar {
-                classifier 'sources'
-            }
-            artifact javadocJar {
-                classifier 'javadoc'
-            }
-        }
-        shadow(MavenPublication) { publication ->
-            project.shadow.component(publication)
+            artifact sourcesJar
+            artifact javadocJar
+            artifact shadowJar
         }
     }
 }
