@@ -3,3 +3,7 @@
 .gradle
 build
 *.iml
+
+.project
+.settings/
+bin/

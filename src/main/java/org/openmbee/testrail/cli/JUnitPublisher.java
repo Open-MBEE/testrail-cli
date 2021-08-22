@@ -120,7 +120,7 @@ public class JUnitPublisher implements Runnable {
         new JUnitPublisher(api, suiteId, planId, reports, milestone, runName, skipCloseRun).run();
     }
 
-    @SneakyThrows({URISyntaxException.class, IOException.class})
+    @SneakyThrows({URISyntaxException.class, IOException.class, InterruptedException.class})
     @Override
     public void run() {
         TestRailSuite suite = api.getSuite(suiteId);
@@ -168,6 +168,9 @@ public class JUnitPublisher implements Runnable {
                 TestRailCase testRailCase = testRailCases.stream().filter(c -> c.getTitle().equals(jUnitTestCase.getName()) || c.getTitle().contains("@" + jUnitTestCase.getName())).findFirst().orElse(null);
                 if (testRailCase == null) {
                     TestRailCase requestCase = new TestRailCase().setSuiteId(suite.getId()).setSectionId(section.getId()).setTitle(jUnitTestCase.getName());
+                    final long sleepMillis = 750L;
+                    System.out.println("Sleeping " + sleepMillis + " milliseconds and then adding case: " + entry.getKey() + "#" + jUnitTestCase.getName());
+                    Thread.sleep(sleepMillis);
                     testRailCase = api.addCase(requestCase);
                 }
                 caseMap.put(jUnitTestCase, testRailCase);
@@ -214,44 +217,48 @@ public class JUnitPublisher implements Runnable {
         List<TestRailTest> tests = api.getTests(run.getId());
         Map<JUnitTestCase, TestRailTest> testMap = caseMap.entrySet().stream().map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), tests.stream().filter(test -> entry.getValue().getId().equals(test.getCaseId())).findAny().orElseThrow(() -> new NullPointerException("No TestRailTest matching JUnitTestCase " + entry.getKey().getName() + ".")))).collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue, throwingMerger(), LinkedHashMap::new));
 
-        Map<JUnitTestCase, TestRailResult> resultMap = testMap.entrySet().stream().map(entry -> {
+        final List<TestRailResult> requestResults = new ArrayList<>();
+
+        testMap.entrySet().stream().forEach(entry -> {
             JUnitTestCase jUnitTestCase = entry.getKey();
-            if (jUnitTestCase.getSkipped() != null) {
-                return new AbstractMap.SimpleEntry<JUnitTestCase, TestRailResult>(entry.getKey(), null);
+            if (jUnitTestCase.getSkipped() == null) {
+                TestRailResult requestResult = new TestRailResult().setTestId(entry.getValue().getId()).setStatusId((jUnitTestCase.getErrors() == null || jUnitTestCase.getErrors().isEmpty()) && (jUnitTestCase.getFailures() == null || jUnitTestCase.getFailures().isEmpty()) ? 1 : 5);
+                int errorCount = jUnitTestCase.getErrors() != null ? jUnitTestCase.getErrors().size() : 0;
+                StringBuilder commentBuilder = new StringBuilder();
+                commentBuilder.append("__Errors:__ ").append(NumberFormat.getInstance().format(errorCount)).append(System.lineSeparator());
+                for (int i = 0; i < errorCount; i++) {
+                    JUnitError error = jUnitTestCase.getErrors().get(i);
+                    commentBuilder.append(i + 1).append(") Message: ").append(error.getMessage()).append(" | Type: ").append(error.getType()).append(System.lineSeparator());
+                    commentBuilder.append(formatCodeString(error.getValue())).append(System.lineSeparator());
+                }
+                int failureCount = jUnitTestCase.getFailures() != null ? jUnitTestCase.getFailures().size() : 0;
+                commentBuilder.append("__Failures:__ ").append(NumberFormat.getInstance().format(failureCount)).append(System.lineSeparator());
+                for (int i = 0; i < failureCount; i++) {
+                    JUnitFailure failure = jUnitTestCase.getFailures().get(i);
+                    commentBuilder.append(i + 1).append(") Message: ").append(failure.getMessage()).append(" | Type: ").append(failure.getType()).append(System.lineSeparator());
+                    commentBuilder.append(formatCodeString(failure.getValue())).append(System.lineSeparator());
+                }
+                commentBuilder.append("__System Out:__ ").append(System.lineSeparator());
+                commentBuilder.append(formatCodeString(jUnitTestCase.getSystemOut())).append(System.lineSeparator());
+                commentBuilder.append("__System Err:__ ").append(System.lineSeparator());
+                commentBuilder.append(formatCodeString(jUnitTestCase.getSystemErr()));
+                requestResult.setComment(commentBuilder.toString());
+                if (jUnitTestCase.getTime() != null) {
+                    requestResult.setElapsed(Math.max(Math.round(jUnitTestCase.getTime()), 1) + "s");
+                }
+                requestResult.setAssignedToId(user.getId());
+
+                requestResults.add(requestResult);
             }
-            TestRailResult requestResult = new TestRailResult().setTestId(entry.getValue().getId()).setStatusId((jUnitTestCase.getErrors() == null || jUnitTestCase.getErrors().isEmpty()) && (jUnitTestCase.getFailures() == null || jUnitTestCase.getFailures().isEmpty()) ? 1 : 5);
-            int errorCount = jUnitTestCase.getErrors() != null ? jUnitTestCase.getErrors().size() : 0;
-            StringBuilder commentBuilder = new StringBuilder();
-            commentBuilder.append("__Errors:__ ").append(NumberFormat.getInstance().format(errorCount)).append(System.lineSeparator());
-            for (int i = 0; i < errorCount; i++) {
-                JUnitError error = jUnitTestCase.getErrors().get(i);
-                commentBuilder.append(i + 1).append(") Message: ").append(error.getMessage()).append(" | Type: ").append(error.getType()).append(System.lineSeparator());
-                commentBuilder.append(formatCodeString(error.getValue())).append(System.lineSeparator());
-            }
-            int failureCount = jUnitTestCase.getFailures() != null ? jUnitTestCase.getFailures().size() : 0;
-            commentBuilder.append("__Failures:__ ").append(NumberFormat.getInstance().format(failureCount)).append(System.lineSeparator());
-            for (int i = 0; i < failureCount; i++) {
-                JUnitFailure failure = jUnitTestCase.getFailures().get(i);
-                commentBuilder.append(i + 1).append(") Message: ").append(failure.getMessage()).append(" | Type: ").append(failure.getType()).append(System.lineSeparator());
-                commentBuilder.append(formatCodeString(failure.getValue())).append(System.lineSeparator());
-            }
-            commentBuilder.append("__System Out:__ ").append(System.lineSeparator());
-            commentBuilder.append(formatCodeString(jUnitTestCase.getSystemOut())).append(System.lineSeparator());
-            commentBuilder.append("__System Err:__ ").append(System.lineSeparator());
-            commentBuilder.append(formatCodeString(jUnitTestCase.getSystemErr()));
-            requestResult.setComment(commentBuilder.toString());
-            if (jUnitTestCase.getTime() != null) {
-                requestResult.setElapsed(Math.max(Math.round(jUnitTestCase.getTime()), 1) + "s");
-            }
-            requestResult.setAssignedToId(user.getId());
-            TestRailResult result;
-            try {
-                result = api.addResult(requestResult);
-            } catch (URISyntaxException | IOException e) {
-                throw new RuntimeException(e);
-            }
-            return new AbstractMap.SimpleEntry<>(entry.getKey(), result);
-        }).collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue, throwingMerger(), LinkedHashMap::new));
+        });
+
+        List<TestRailResult> results = new ArrayList<>();
+
+        try {
+          results = api.addResults(requestResults, run.getId());
+        } catch (URISyntaxException | IOException e) {
+          throw new RuntimeException(e);
+        }
 
         if (!skipCloseRun) {
             run = api.closeRun(run);
